@@ -1,13 +1,14 @@
 let sScene, sBGLayer, sObjLayer, sUILayer, sBOLayer;
 let sSceneTime;
 let sloRect, sLoID;//最初の暗転
+let sBoRect, sBoTID;//シーン切り替えの暗転
 
 //「曲セレクト」の文字
 let stsText, stsFont, stsTextRect;
 
 //セレクトの状態
 let sTuneOrDiff = true;//trueなら曲、falseなら難易度選択
-let sStatusArrow;
+let sStatusArrow, sStatusTxt;
 
 //曲の選択肢
 let nowSelect = 0;
@@ -20,7 +21,7 @@ let canSelectKeyInput;
 let canSelectKeyInputTime;
 
 //選択した曲の情報を表示/難易度選択
-let nowDifficulty=0;//0:easy 1:normal 2:hard 3:exstra
+let nowDifficulty = 0;//0:easy 1:normal 2:hard 3:exstra
 let stFlame, stFlameBG;
 let stTuneULine, stTuneName
 let stTuneCredit;
@@ -31,6 +32,11 @@ let stDiffBG = [];
 let stDiffHighScoreTxt = [];
 let nowSound;//選択した曲の音源
 
+//ゲームスタート管理
+let sCfmLayer;
+let confirmStart = false;//trueなら確認画面表示
+let cfmBG, cfmTextName, cfmTextDiff, cfmYesOrNo, cfmYoNAlpID, cfmYoNRepID;
+
 function selectReset() {
     sScene = new Fortis.Scene();
     Fortis.Game.setScene(sScene);
@@ -38,6 +44,10 @@ function selectReset() {
     sObjLayer = sScene.getObj();
     sBGLayer = sScene.getBG();
     sUILayer = sScene.getUI();
+
+    sCfmLayer = new Fortis.Layer();
+    sScene.add(sCfmLayer);
+
     sBOLayer = new Fortis.Layer();
     sScene.add(sBOLayer);
 
@@ -63,6 +73,12 @@ function selectReset() {
         Fortis.TransitionManager.start(sLoID);
     }
 
+    //最後の暗転
+    {
+        sBoRect = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x * 2, Fortis.Game.canvasCfg.size.y * 2), new Fortis.ColorMaterial(new Fortis.Color("black")));
+        sBoRect.alpha = 0;
+        sBOLayer.add(sBoRect);
+    }
 
     //「曲セレクト」の文字
     {
@@ -98,13 +114,16 @@ function selectReset() {
         canSelectKeyInput = true;
         canSelectKeyInputTime = 250;
     }
-    
+
     //セレクトの状態
     {
-        sStatusArrow = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 27, Fortis.Game.canvasCfg.size.x / 27)), new Fortis.ImageMaterial("AR"));
+        sStatusArrow = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 27, Fortis.Game.canvasCfg.size.x / 27)), new Fortis.ImageMaterial("ArrowRight"));
         sStatusArrow.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2.1, Fortis.Game.canvasCfg.size.y / 2);
         sStatusArrow.angle = 180;
-        sUILayer.add(sStatusArrow);
+        sStatusTxt = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 30), "曲"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        sStatusTxt.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2.1, Fortis.Game.canvasCfg.size.y / 1.8);
+
+        sUILayer.addEntities([sStatusArrow, sStatusTxt]);
     }
 
     //選択した曲の情報を表示/難易度選択
@@ -192,6 +211,40 @@ function selectReset() {
         sObjLayer.addEntities([stFlameBG, stFlame, stTuneULine, stTuneName, stTuneCredit, stTuneBPMAndTime, ...stDiffBG, ...stDiffHighScoreTxt, stEasyFlame, stNormalFlame, stHardFlame, stExstraFlame, stEasyText, stNormalText, stHardText, stExstraText]);
     }
 
+    //選曲確認画面
+    {
+        cfmBG = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x, Fortis.Game.canvasCfg.size.y), new Fortis.ColorMaterial(new Fortis.Color("black")));
+        cfmBG.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2);
+        cfmBG.alpha = 0;
+
+        cfmTextName = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 12), "曲:" + tunesInfo[nowSelect].name), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        cfmTextName.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2 - Fortis.Game.canvasCfg.size.y / 7);
+        cfmTextName.alpha = 0;
+        cfmTextDiff = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 15), "難易度:" + ["Easy", "Normal", "Hard", "Exstra"][nowDifficulty]), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        cfmTextDiff.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2 - Fortis.Game.canvasCfg.size.y / 25);
+        cfmTextDiff.alpha = 0;
+        cfmTextDiff.shape.text = ["Easy", "Normal", "Hard", "Extra"][nowDifficulty];
+        cfmTextDiff.material.fill = new Fortis.Color(["#1da23e", "#1a679b", "#971b1b", "#70138f"][nowDifficulty]);
+
+        cfmYesOrNo = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 30), "Press space to begin / Q to return"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        cfmYesOrNo.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2 + Fortis.Game.canvasCfg.size.y / 15);
+        cfmYesOrNo.alpha = 0;
+        cfmYoNRepID = Fortis.Timer.add(1450, true, function () {
+            if (confirmStart) {
+                if (cfmYesOrNo.alpha == 0.1) {
+                    cfmYoNAlpID = Fortis.TransitionManager.add(cfmYesOrNo, "alpha", 1400, 0.1, 0.8, Fortis.util.easing.inOutPower, 2);
+                    Fortis.TransitionManager.start(cfmYoNAlpID);
+                } else {
+                    cfmYoNAlpID = Fortis.TransitionManager.add(cfmYesOrNo, "alpha", 1400, 0.8, 0.1, Fortis.util.easing.inOutPower, 2);
+                    Fortis.TransitionManager.start(cfmYoNAlpID);
+                }
+            }
+        });
+        Fortis.Timer.start(cfmYoNRepID);
+
+        sCfmLayer.addEntities([cfmBG, cfmTextName, cfmTextDiff, cfmYesOrNo]);
+    }
+
     //選択肢を初期化
     nowSound = new Fortis.SimpleSound(tunesInfo[nowSelect].data);//最初に必要
     nowSound.setVolume(tunesInfo[nowSelect].volume);
@@ -232,72 +285,113 @@ function sUpdate(delta) {
 
 
     if (sLoRect.alpha == 0) {//開始１秒は反応しない
-        if(Fortis.InputKey["ArrowLeft"] || Fortis.InputKey["KeyA"]){
-            sTuneOrDiff = true;
-            sStatusArrow.angle = 180;
+        //選曲確認
+        if (Fortis.InputKey["Escape"] || Fortis.InputKey["KeyQ"]) {
+            confirmStart = false;
+            cfmBG.alpha = 0;
+            cfmTextName.alpha = 0;
+            cfmTextDiff.alpha = 0;
+            Fortis.TransitionManager.stop(cfmYoNAlpID);
+            cfmYesOrNo.alpha = 0;
         }
-        if(Fortis.InputKey["ArrowRight"] || Fortis.InputKey["KeyD"]){
-            sTuneOrDiff = false;
-            sStatusArrow.angle = 0;
+        if (Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) {
+            confirmStart = true;
+            cfmBG.alpha = 0.85;
+            cfmTextName.alpha = 1;
+            cfmTextDiff.alpha = 1;
+            cfmYesOrNo.alpha = 1;
         }
 
-        //セレクト
-        if (canSelectKeyInput) {
-            if (sTuneOrDiff) {//曲選択中
-                if ((Fortis.InputKey["ArrowUp"] || Fortis.InputKey["KeyW"]) && nowSelect > 0) {
-                    canSelectKeyInput = false;
-                    selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
-                        canSelectKeyInput = true;
-                    });
-                    Fortis.Timer.start(selectKeyRestrainTimerId);
-                    nowSelect--;
-                    tuneSelectChange(false);
-                }
-                if ((Fortis.InputKey["ArrowDown"] || Fortis.InputKey["KeyS"]) && nowSelect < tunesInfo.length - 1) {
-                    canSelectKeyInput = false;
-                    selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
-                        canSelectKeyInput = true;
-                    });
-                    Fortis.Timer.start(selectKeyRestrainTimerId);
-                    nowSelect++;
-                    tuneSelectChange(false);
-                }
-            }else{//難易度選択中
-                if ((Fortis.InputKey["ArrowUp"] || Fortis.InputKey["KeyW"]) && nowDifficulty > 0) {
-                    canSelectKeyInput = false;
-                    nowDifficulty--;
-                    selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
-                        canSelectKeyInput = true;
-                    });
-                    Fortis.Timer.start(selectKeyRestrainTimerId);
-                    for(let i = 0; i < stDiffBG.length; i++){
-                        if(nowDifficulty == i){
-                            stDiffBG[i].alpha = 0.6;
-                        } else {
-                            stDiffBG[i].alpha = 0;
-                        }
+        //プレイ開始
+        if (sBoRect.alpha == 1) {
+            sScene.destroy();
+            fallingLetters = [];
+            nowScene = "play";
+            playReset();
+            nowSound.pause();
+        }
+
+        if (confirmStart) {
+            if (Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) {
+                //ゲームスタート
+                sBoTID = Fortis.TransitionManager.add(sBoRect, "alpha", 500, 0, 1, Fortis.util.easing.inPower, 2);
+                Fortis.TransitionManager.start(sBoTID);
+            }
+        } else {
+            //状態選択
+            if (Fortis.InputKey["ArrowLeft"] || Fortis.InputKey["KeyA"]) {
+                sTuneOrDiff = true;
+                sStatusArrow.angle = 180;
+                sStatusTxt.shape.text = "楽曲";
+            }
+            if (Fortis.InputKey["ArrowRight"] || Fortis.InputKey["KeyD"]) {
+                sTuneOrDiff = false;
+                sStatusArrow.angle = 0;
+                sStatusTxt.shape.text = "難易度";
+            }
+
+            //セレクト
+            if (canSelectKeyInput) {
+                if (sTuneOrDiff) {//曲選択中
+                    if ((Fortis.InputKey["ArrowUp"] || Fortis.InputKey["KeyW"]) && nowSelect > 0) {
+                        canSelectKeyInput = false;
+                        selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
+                            canSelectKeyInput = true;
+                        });
+                        Fortis.Timer.start(selectKeyRestrainTimerId);
+                        nowSelect--;
+                        tuneSelectChange(false);
                     }
-                }
-                if ((Fortis.InputKey["ArrowDown"] || Fortis.InputKey["KeyS"]) && nowDifficulty < 3) {
-                    canSelectKeyInput = false;
-                    nowDifficulty++;
-                    selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
-                        canSelectKeyInput = true;
-                    });
-                    Fortis.Timer.start(selectKeyRestrainTimerId);
-                    for(let i = 0; i < stDiffBG.length; i++){
-                        if(nowDifficulty == i){
-                            stDiffBG[i].alpha = 0.6;
-                        } else {
-                            stDiffBG[i].alpha = 0;
+                    if ((Fortis.InputKey["ArrowDown"] || Fortis.InputKey["KeyS"]) && nowSelect < tunesInfo.length - 1) {
+                        canSelectKeyInput = false;
+                        selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
+                            canSelectKeyInput = true;
+                        });
+                        Fortis.Timer.start(selectKeyRestrainTimerId);
+                        nowSelect++;
+                        tuneSelectChange(false);
+                    }
+                } else {//難易度選択中
+                    if ((Fortis.InputKey["ArrowUp"] || Fortis.InputKey["KeyW"]) && nowDifficulty > 0) {
+                        canSelectKeyInput = false;
+                        nowDifficulty--;
+                        selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime - 70, false, function () {
+                            canSelectKeyInput = true;
+                        });
+                        Fortis.Timer.start(selectKeyRestrainTimerId);
+                        for (let i = 0; i < stDiffBG.length; i++) {
+                            if (nowDifficulty == i) {
+                                stDiffBG[i].alpha = 0.6;
+                            } else {
+                                stDiffBG[i].alpha = 0;
+                            }
                         }
+                        cfmTextDiff.shape.text = ["Easy", "Normal", "Hard", "Extra"][nowDifficulty];
+                        cfmTextDiff.material.fill = new Fortis.Color(["#1da23e", "#1a679b", "#971b1b", "#70138f"][nowDifficulty]);
+                    }
+                    if ((Fortis.InputKey["ArrowDown"] || Fortis.InputKey["KeyS"]) && nowDifficulty < 3) {
+                        canSelectKeyInput = false;
+                        nowDifficulty++;
+                        selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime - 70, false, function () {
+                            canSelectKeyInput = true;
+                        });
+                        Fortis.Timer.start(selectKeyRestrainTimerId);
+                        for (let i = 0; i < stDiffBG.length; i++) {
+                            if (nowDifficulty == i) {
+                                stDiffBG[i].alpha = 0.6;
+                            } else {
+                                stDiffBG[i].alpha = 0;
+                            }
+                        }
+                        cfmTextDiff.shape.text = ["Easy", "Normal", "Hard", "Extra"][nowDifficulty];
+                        cfmTextDiff.material.fill = new Fortis.Color(["#1da23e", "#1a679b", "#971b1b", "#70138f"][nowDifficulty]);
                     }
                 }
             }
         }
     }
 }
-    
+
 function tuneSelectChange(init) {
     for (let i = 0; i < tunesTxtContainer.length; i++) {
         if (init) {
@@ -321,11 +415,14 @@ function tuneSelectChange(init) {
     stTuneName.shape.text = tunesInfo[nowSelect].name;
     stTuneName.shape.font.family = tunesInfo[nowSelect].font;
 
+    cfmTextName.shape.text = tunesInfo[nowSelect].name;
+    cfmTextName.shape.font.family = tunesInfo[nowSelect].font;
+
     stTuneCredit.shape.text = tunesInfo[nowSelect].credit;
 
     stTuneBPMAndTime.shape.text = "BPM:" + tunesInfo[nowSelect].BPM + "               " + "時間:" + Math.floor(tunesInfo[nowSelect].time / 1000) + "秒";
 
-    for(let i = 0; i < stDiffHighScoreTxt.length; i++){
+    for (let i = 0; i < stDiffHighScoreTxt.length; i++) {
         stDiffHighScoreTxt[i].shape.text = highScoreData[tunesInfo[nowSelect].data][i].toString().padStart(8, '0');
     }
 

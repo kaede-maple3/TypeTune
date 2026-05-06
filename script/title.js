@@ -28,12 +28,12 @@ function title() {
     titleText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y * 1 / 3);
 
     startFont = new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 27);
-    startText = new Fortis.Entity(new Fortis.TextShape(startFont, "Press space key to start."), new Fortis.ColorMaterial(new Fortis.Color("white")));
+    startText = new Fortis.Entity(new Fortis.TextShape(startFont, "Press space to start"), new Fortis.ColorMaterial(new Fortis.Color("white")));
     startText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y * 2 / 3);
     startText.alpha = 0.8;
     startAlpID = Fortis.TransitionManager.add(startText, "alpha", 1100, 0.8, 0.1, Fortis.util.easing.inOutPower, 2);
     Fortis.TransitionManager.start(startAlpID);
-    startRepID = Fortis.Timer.add(1100, true, setStartRepTr);
+    startRepID = Fortis.Timer.add(1150, true, setStartRepTr);
     Fortis.Timer.start(startRepID);
 
     tBoRect = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x * 2, Fortis.Game.canvasCfg.size.y * 2), new Fortis.ColorMaterial(new Fortis.Color("black")));

@@ -36,9 +36,7 @@ function Init() {
         "sg": "./img/notes/sg.png",
         "tuneTxtBG": "./img/ui/tuneTxtBG.png",
         "tuneTxtBGselected": "./img/ui/tuneTxtBGselected.png",
-        "ArrowRight": "./img/ui/ArrowRight.png",
-        "ArrowLeft": "./img/ui/ArrowLeft.png",
-        "AR":"./img/ui/AR.png",
+        "ArrowRight":"./img/ui/ArrowRight.png",
     });
 
     Fortis.SoundLoader.addSimpleSounds({
