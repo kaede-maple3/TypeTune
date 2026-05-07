@@ -156,16 +156,16 @@ function selectReset() {
         //フレーム
         {
             //選択時の背景
-            let diffBGEasy = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#3c3c3c")));
+            let diffBGEasy = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#444444")));
             diffBGEasy.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.3, Fortis.Game.canvasCfg.size.y / 2.4);
             diffBGEasy.alpha = 0.6;
-            let diffBGNormal = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#3c3c3c")));
+            let diffBGNormal = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#444444")));
             diffBGNormal.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.3, Fortis.Game.canvasCfg.size.y / 1.8);
             diffBGNormal.alpha = 0;
-            let diffBGHard = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#3c3c3c")));
+            let diffBGHard = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#444444")));
             diffBGHard.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.3, Fortis.Game.canvasCfg.size.y / 1.43);
             diffBGHard.alpha = 0;
-            let diffBGExstra = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#3c3c3c")));
+            let diffBGExstra = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 3, Fortis.Game.canvasCfg.size.y / 10), new Fortis.ColorMaterial(new Fortis.Color("#444444")));
             diffBGExstra.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.3, Fortis.Game.canvasCfg.size.y / 1.19);
             diffBGExstra.alpha = 0;
             stDiffBG.push(diffBGEasy, diffBGNormal, diffBGHard, diffBGExstra);
@@ -217,7 +217,7 @@ function selectReset() {
         cfmBG.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2);
         cfmBG.alpha = 0;
 
-        cfmTextName = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 12), "曲:" + tunesInfo[nowSelect].name), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        cfmTextName = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 12), "楽曲:" + tunesInfo[nowSelect].name), new Fortis.ColorMaterial(new Fortis.Color("white")));
         cfmTextName.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2 - Fortis.Game.canvasCfg.size.y / 7);
         cfmTextName.alpha = 0;
         cfmTextDiff = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 15), "難易度:" + ["Easy", "Normal", "Hard", "Exstra"][nowDifficulty]), new Fortis.ColorMaterial(new Fortis.Color("white")));
@@ -284,23 +284,8 @@ function sUpdate(delta) {
     }
 
 
-    if (sLoRect.alpha == 0) {//開始１秒は反応しない
-        //選曲確認
-        if (Fortis.InputKey["Escape"] || Fortis.InputKey["KeyQ"]) {
-            confirmStart = false;
-            cfmBG.alpha = 0;
-            cfmTextName.alpha = 0;
-            cfmTextDiff.alpha = 0;
-            Fortis.TransitionManager.stop(cfmYoNAlpID);
-            cfmYesOrNo.alpha = 0;
-        }
-        if (Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) {
-            confirmStart = true;
-            cfmBG.alpha = 0.85;
-            cfmTextName.alpha = 1;
-            cfmTextDiff.alpha = 1;
-            cfmYesOrNo.alpha = 1;
-        }
+    if (sLoRect.alpha == 0) {//開始0.5秒は反応しない
+
 
         //プレイ開始
         if (sBoRect.alpha == 1) {
@@ -312,19 +297,61 @@ function sUpdate(delta) {
         }
 
         if (confirmStart) {
-            if (Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) {
+            if ((Fortis.InputKey["Escape"] || Fortis.InputKey["KeyQ"]) && canSelectKeyInput) {
+                confirmStart = false;
+                cfmBG.alpha = 0;
+                cfmTextName.alpha = 0;
+                cfmTextDiff.alpha = 0;
+                Fortis.TransitionManager.stop(cfmYoNAlpID);
+                cfmYesOrNo.alpha = 0;
+            }
+            if ((Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) && canSelectKeyInput) {
                 //ゲームスタート
-                sBoTID = Fortis.TransitionManager.add(sBoRect, "alpha", 500, 0, 1, Fortis.util.easing.inPower, 2);
+                canSelectKeyInput = false;
+                sBoTID = Fortis.TransitionManager.add(sBoRect, "alpha", 1500, 0, 1, Fortis.util.easing.inPower, 2);
                 Fortis.TransitionManager.start(sBoTID);
             }
         } else {
+            //選曲確認
+            if (Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) {
+                confirmStart = true;
+                cfmBG.alpha = 0.85;
+                cfmTextName.alpha = 1;
+                cfmTextDiff.alpha = 1;
+                cfmYesOrNo.alpha = 1;
+                canSelectKeyInput = false;
+                //選曲確認のキー入力の抑制
+                selectKeyRestrainTimerId = Fortis.Timer.add(canSelectKeyInputTime, false, function () {
+                    canSelectKeyInput = true;
+                });
+                Fortis.Timer.start(selectKeyRestrainTimerId);
+            }
+
             //状態選択
             if (Fortis.InputKey["ArrowLeft"] || Fortis.InputKey["KeyA"]) {
+                /*
+                //曲選択のときは背景を普通にする
+                for (let i = 0; i < tunesTxtContainer.length; i++) {
+                    if (i == nowSelect) {
+                        tunesTxtContainer[i].entity[0].entity.material.key = "tuneTxtBGselected";
+                    } else {
+                        tunesTxtContainer[i].entity[0].entity.material.key = "tuneTxtBG";
+                    }
+                }
+                    */
+
                 sTuneOrDiff = true;
                 sStatusArrow.angle = 180;
                 sStatusTxt.shape.text = "楽曲";
             }
             if (Fortis.InputKey["ArrowRight"] || Fortis.InputKey["KeyD"]) {
+                /*
+                //難易度選択のときはすべてもとの状態に戻す
+                for (let i = 0; i < tunesTxtContainer.length; i++) {
+                    tunesTxtContainer[i].entity[0].entity.material.key = "tuneTxtBG";
+                }
+                    */
+
                 sTuneOrDiff = false;
                 sStatusArrow.angle = 0;
                 sStatusTxt.shape.text = "難易度";
