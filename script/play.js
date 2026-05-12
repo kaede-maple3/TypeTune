@@ -1,9 +1,27 @@
-let pScene, pBGLayer, pObjLayer, pUILayer, pBOLayer;
+let pScene, pBGLayer, pObjLayer, pUILayer, pBOLayer;//シーンとレイヤー
 let pSceneSTime;
 
-let pLoRect, pLoID;
+let pLoRect, pLoID;//最初の暗転
 
-let pStageRect;
+let TuneName, TuneDiff;//曲名と難易度
+
+//タイマー
+let tuneStartTimerID;//曲開始までのタイマー
+let notesStartTimerID;//ノーツの生成開始までのタイマー
+
+let pStageRect, pStageOffset;//ステージのBGとオフセット(x座標をずらす)
+let pStageFlames = [];//ステージのフレーム
+let pJudgeBar = [];//判定バー
+let waitStartTime;//開始待機時間
+let nowPlaying;//現在再生中かどうか
+let notesStarted;//ノーツ生成が開始されたか
+let notesSpeed;//ノーツの速度(%表示)
+const DefNotesDisplayTime = 1500;//デフォルトのノーツが表示される時間(ms)
+let notesDisplayTime;//ノーツの表示時間
+let notesStartTime;//ノーツ生成での時間
+let tuneStartTime;//再生中での時間
+let tuneBPM;//BPM
+let oneBeatTime;//16音符1拍の時間
 
 function playReset() {
     pScene = new Fortis.Scene();
@@ -16,6 +34,14 @@ function playReset() {
     pScene.add(pBOLayer);
 
     pSceneSTime = performance.now();
+
+    waitStartTime = 5000;
+    nowPlaying = false;
+    notesSpeed = 100;
+    notesDisplayTime = DefNotesDisplayTime * notesSpeed / 100;
+    tuneBPM = tunesInfo[nowSelect].BPM;
+    oneBeatTime = (60000 / tuneBPM) / 16;
+
 
     //アルファベット落下
     {
@@ -35,9 +61,62 @@ function playReset() {
         Fortis.TransitionManager.start(pLoID);
     }
 
-    pStageRect = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x/1.8, Fortis.Game.canvasCfg.size.y), new Fortis.ColorMaterial(new Fortis.Color("#333333")));
-    pStageRect.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, Fortis.Game.canvasCfg.size.y / 2);
-    pUILayer.add(pStageRect);
+    //曲名と難易度
+    {
+        TuneName = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font(tunesInfo[nowSelect]["font"], Fortis.Game.canvasCfg.size.y / 25), tunesInfo[nowSelect].name), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        TuneName.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 1.2);
+
+        TuneDiff = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 25), ["Easy", "Normal", "Hard", "Extra"][nowDifficulty]), new Fortis.ColorMaterial(new Fortis.Color(["#1da23e", "#1a679b", "#971b1b", "#70138f"][nowDifficulty])));
+        TuneDiff.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 1.12);
+
+        pUILayer.addEntities([TuneName, TuneDiff]);
+    }
+
+    //ステージとフレーム
+    {
+        pStageOffset = Fortis.Game.canvasCfg.size.x / 25;
+
+        pStageRect = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 1.8, Fortis.Game.canvasCfg.size.y), new Fortis.ColorMaterial(new Fortis.Color("#252525")));
+        pStageRect.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2 - pStageOffset, Fortis.Game.canvasCfg.size.y / 2);
+        pStageRect.alpha = 0.6;
+
+        pObjLayer.add(pStageRect);
+
+        //判定バー
+        {
+            for (let i = 0; i < 4; i++) {
+                let bar = new Fortis.Entity(new Fortis.LineShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 7.2, 0)), new Fortis.ColorMaterial(null, new Fortis.Color("#ececec")));
+                bar.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2 - pStageOffset - pStageRect.shape.size.x / 2 + (pStageRect.shape.size.x / 4) * i, Fortis.Game.canvasCfg.size.y / 1.15);
+                bar.material.thick = 7;
+                bar.alpha = 0.35;
+                pJudgeBar.push(bar);
+            }
+        }
+
+        for (let i = 0; i < 5; i++) {
+            let flame = new Fortis.Entity(new Fortis.LineShape(new Fortis.Vector2(0, Fortis.Game.canvasCfg.size.y)), new Fortis.ColorMaterial(null, new Fortis.Color("#353535")));
+            flame.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2 - pStageOffset - pStageRect.shape.size.x / 2 + (pStageRect.shape.size.x / 4) * i, 0);
+            pStageFlames.push(flame);
+        }
+
+        pUILayer.addEntities([...pJudgeBar, ...pStageFlames]);
+    }
+
+    //タイマー
+    {
+        tuneStartTimerID = Fortis.Timer.add(waitStartTime, false, function () {
+            //曲開始
+            nowPlaying = true;
+            nowSound.currentTime = 0;
+            nowSound.play();
+            tuneStartTime = performance.now();
+        });
+        notesStartTimerID = Fortis.Timer.add(waitStartTime - notesDisplayTime * 2, false, function () {
+            //ノーツの生成開始
+            notesStarted = true;
+            notesStartTime = performance.now();
+        });
+    }
 }
 
 //nowSoundは設定済みなので、開始するときに0から再生する
@@ -54,7 +133,45 @@ function pUpdate(delta) {
         }
     }
 
-    if(pLoRect.alpha == 0) {}//開始0.5秒は何もしない
+    if (pLoRect.alpha == 0) { //開始少しの間は何もしない
+        //キー入力
+        {
+            if (Fortis.InputKey["KeyD"] || Fortis.InputKey["Space"]) {
+                pJudgeBar[0].alpha = 1;
+            } else {
+                pJudgeBar[0].alpha = 0.35;
+            }
+
+            if (Fortis.InputKey["KeyF"] || Fortis.InputKey["Space"]) {
+                pJudgeBar[1].alpha = 1;
+            } else {
+                pJudgeBar[1].alpha = 0.35;
+            }
+
+            if (Fortis.InputKey["KeyJ"] || Fortis.InputKey["Space"]) {
+                pJudgeBar[2].alpha = 1;
+            } else {
+                pJudgeBar[2].alpha = 0.35;
+            }
+
+            if (Fortis.InputKey["KeyK"] || Fortis.InputKey["Space"]) {
+                pJudgeBar[3].alpha = 1;
+            } else {
+                pJudgeBar[3].alpha = 0.35;
+            }
+        }
+
+        //再生中
+        if (nowPlaying) {
+
+        }
+
+        //ノーツ生成開始した
+        if (notesStarted) {
+            let tuneConvTime = performance.now() - tuneStartTime + notesDisplayTime * 2;//曲開始からの時間
+            let nowBeat = Math.floor(tuneConvTime / oneBeatTime);//現在の16分音符の拍数
+        }
+    }
 }
 
 function setFallingLetterP() {
