@@ -10,6 +10,7 @@ let tuneStartTimerID;//曲開始までのタイマー
 let notesStartTimerID;//ノーツの生成開始までのタイマー
 
 let pStageRect, pStageOffset;//ステージのBGとオフセット(x座標をずらす)
+let nowMScore = {};//現在の譜面
 let pStageFlames = [];//ステージのフレーム
 let pJudgeBar = [];//判定バー
 let waitStartTime;//開始待機時間
@@ -35,6 +36,7 @@ function playReset() {
 
     pSceneSTime = performance.now();
 
+    nowMScore = tunesInfo[nowSelect].score[nowDifficulty];
     waitStartTime = 5000;
     nowPlaying = false;
     notesSpeed = 100;
@@ -111,11 +113,13 @@ function playReset() {
             nowSound.play();
             tuneStartTime = performance.now();
         });
+        Fortis.Timer.start(tuneStartTimerID);
         notesStartTimerID = Fortis.Timer.add(waitStartTime - notesDisplayTime * 2, false, function () {
             //ノーツの生成開始
             notesStarted = true;
             notesStartTime = performance.now();
         });
+        Fortis.Timer.start(notesStartTimerID);
     }
 }
 
@@ -168,8 +172,9 @@ function pUpdate(delta) {
 
         //ノーツ生成開始した
         if (notesStarted) {
-            let tuneConvTime = performance.now() - tuneStartTime + notesDisplayTime * 2;//曲開始からの時間
+            let tuneConvTime = performance.now() - notesStartTime;//曲開始からの時間
             let nowBeat = Math.floor(tuneConvTime / oneBeatTime);//現在の16分音符の拍数
+            //ノーツの生成
         }
     }
 }
