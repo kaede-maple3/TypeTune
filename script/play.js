@@ -10,19 +10,24 @@ let tuneStartTimerID;//曲開始までのタイマー
 let notesStartTimerID;//ノーツの生成開始までのタイマー
 
 let pStageRect, pStageOffset;//ステージのBGとオフセット(x座標をずらす)
-let nowMScore = {};//現在の譜面
 let pStageFlames = [];//ステージのフレーム
 let pJudgeBar = [];//判定バー
 let waitStartTime;//開始待機時間
 let nowPlaying;//現在再生中かどうか
 let notesStarted;//ノーツ生成が開始されたか
-let notesSpeed;//ノーツの速度(%表示)
-const DefNotesDisplayTime = 1500;//デフォルトのノーツが表示される時間(ms)
+let notesSpeedPer;//ノーツの速度(%表示)
+const DefNotesDisplayTime = 800;//デフォルトのノーツが表示される時間(ms)
 let notesDisplayTime;//ノーツの表示時間
+let notesSpeed;//ノーツの実速度(/msだからdeltaをそのままかける)
 let notesStartTime;//ノーツ生成での時間
 let tuneStartTime;//再生中での時間
 let tuneBPM;//BPM
 let oneBeatTime;//16音符1拍の時間
+let notesData = [];//曲のスコアのデータを格納(流したノーツから消えていく)
+let notesObjs = [];//生成されたノーツのオブジェクトを格納
+let beatsStd;//拍の取り方の基準の新旧(beatsStdOaN参照)
+let notesLastBeatByKey = [];//キー毎の最後に生成したノーツの拍数
+let keys;//Spaceは別に用意
 
 function playReset() {
     pScene = new Fortis.Scene();
@@ -36,13 +41,19 @@ function playReset() {
 
     pSceneSTime = performance.now();
 
-    nowMScore = tunesInfo[nowSelect].score[nowDifficulty];
     waitStartTime = 5000;
     nowPlaying = false;
-    notesSpeed = 100;
-    notesDisplayTime = DefNotesDisplayTime * notesSpeed / 100;
+    notesSpeedPer = 100;
+    notesDisplayTime = DefNotesDisplayTime * (notesSpeedPer / 100);
+    notesSpeed = (Fortis.Game.canvasCfg.size.y / 1.15) / notesDisplayTime;
     tuneBPM = tunesInfo[nowSelect].BPM;
-    oneBeatTime = (60000 / tuneBPM) / 16;
+    oneBeatTime = (60000 / tuneBPM) / 4;
+    console.log(tunesInfo[nowSelect].score[nowDifficulty])
+    notesData = tunesInfo[nowSelect].score[nowDifficulty];
+    beatsStd = beatsStdOaN[nowSelect][nowDifficulty];
+    console.log(beatsStdOaN[nowSelect])
+    notesLastBeatByKey = [0, 0, 0, 0, 0];
+    keys = ["D", "F", "J", "K"];
 
 
     //アルファベット落下
@@ -174,7 +185,86 @@ function pUpdate(delta) {
         if (notesStarted) {
             let tuneConvTime = performance.now() - notesStartTime;//曲開始からの時間
             let nowBeat = Math.floor(tuneConvTime / oneBeatTime);//現在の16分音符の拍数
-            //ノーツの生成
+
+            notesMoving(delta);
+
+            notesGene(tuneConvTime, nowBeat);//ノーツ生成
+        }
+    }
+}
+
+function notesMoving(delta) {
+    for (let i = 0; i < notesObjs.length; i++) {
+        if (notesObjs[i].obj instanceof Fortis.EntityContainer) {
+            notesObjs[i].obj.entity.forEach(note => {
+                note.entity.pos.y += notesSpeed * delta;
+            });
+            if (notesObjs[i].obj.entity[2].entity.pos.y > Fortis.Game.canvasCfg.size.y + Fortis.Game.canvasCfg.size.x / 10) {
+                pObjLayer.remove(notesObjs[i].obj);
+                notesObjs.splice(i, 1);
+                i--;
+            }
+        } else {
+            notesObjs[i].obj.pos.y += notesSpeed * delta;
+            //画面外に出たら削除
+            if (notesObjs[i].obj.pos.y > Fortis.Game.canvasCfg.size.y + Fortis.Game.canvasCfg.size.x / 10) {
+                pObjLayer.remove(notesObjs[i].obj);
+                notesObjs.splice(i, 1);
+                i--;
+            }
+        }
+
+    }
+}
+
+function notesGene(tuneConvTime, nowBeat) {
+    //console.log(nowBeat);
+    if (beatsStd) {//基準が古い場合
+        let oldNB = Math.floor((nowBeat + 1) / 2);//去年の基準での拍数
+        //console.log(oldNB);
+        for (let i = 0; i < keys.length; i++) {
+            let keyXPos = pJudgeBar[i].pos.x + Fortis.Game.canvasCfg.size.x / 14.4;
+            for (let beat = notesLastBeatByKey[i] + 1; beat <= oldNB; beat++) {
+                if (beat in notesData[keys[i]]) {
+                    let time = beat * oneBeatTime * 2;
+                    if (notesData[keys[i]][beat][0] == 1) {//単ノーツ
+                        let note = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 12.5, Fortis.Game.canvasCfg.size.x / 12.5)), new Fortis.ImageMaterial("cg"));
+                        if (notesData[keys[i]][beat][1]) {//ポイント高めのノーツ
+                            note.material.key = "cb";
+                        }
+
+                        note.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
+                        //console.log(tuneConvTime - time)
+                        notesObjs.push({
+                            "obj": note,
+                            "beat": beat,
+                            "point": notesData[keys[i]][beat][1],
+                        });
+                        pObjLayer.add(note);
+                    } else {//ロングノーツ
+                        let notes = new Fortis.EntityContainer();
+                        let noteHead = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 12.5, Fortis.Game.canvasCfg.size.x / 12.5)), new Fortis.ImageMaterial("sg"));
+                        noteHead.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
+                        let noteTail = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 12.5, Fortis.Game.canvasCfg.size.x / 12.5)), new Fortis.ImageMaterial("sb"));
+                        noteTail.pos = new Fortis.Vector2(keyXPos, noteHead.pos.y - (notesData[keys[i]][beat][0]-1) * oneBeatTime * 2 * notesSpeed);
+                        let noteBody = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 18, (notesData[keys[i]][beat][0]-1) * oneBeatTime * 2 * notesSpeed), new Fortis.ColorMaterial(new Fortis.Color("#d0ff00")));
+                        noteBody.pos = new Fortis.Vector2(keyXPos, (noteHead.pos.y + noteTail.pos.y) / 2);
+
+                        notes.add(noteBody);
+                        notes.add(noteHead);
+                        notes.add(noteTail);
+
+                        notesObjs.push({
+                            "obj": notes,
+                            "beat": beat,
+                            "point": notesData[keys[i]][beat][1],
+                        });
+                        pObjLayer.add(notes);
+                    }
+                    delete notesData[keys[i]][beat];
+                    notesLastBeatByKey[i] = beat;
+                }
+            }
         }
     }
 }

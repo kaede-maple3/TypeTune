@@ -1,3 +1,24 @@
+let beatsStdOaN = [//old=true/new=false
+    [//シャイニングスター
+        true,true
+    ],
+    [//Burning Heart
+        true,true
+    ],
+    [//エリーゼのために
+        true,true
+    ],
+    [//ハルジオン
+        true,true
+    ],
+    [//君が代
+        true,true
+    ],
+    [//アルプス一万尺
+        true,true
+    ],
+]
+
 let tunesInfo = [
     /*
     {
