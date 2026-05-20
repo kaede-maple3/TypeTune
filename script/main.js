@@ -29,10 +29,8 @@ function Init() {
     });
     Fortis.ImageLoader.addImages({
         "cb": "./img/notes/cb.png",
-        "cy": "./img/notes/cy.png",
         "cg": "./img/notes/cg.png",
         "sb": "./img/notes/sb.png",
-        "sy": "./img/notes/sy.png",
         "sg": "./img/notes/sg.png",
         "tuneTxtBG": "./img/ui/tuneTxtBG.png",
         "tuneTxtBGselected": "./img/ui/tuneTxtBGselected.png",
