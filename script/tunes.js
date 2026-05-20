@@ -1,6 +1,6 @@
 let beatsStdOaN = [//old=true/new=false
     [//シャイニングスター
-        true,true
+        true,true,false
     ],
     [//Burning Heart
         true,true
@@ -42,7 +42,8 @@ let tunesInfo = [
         "data": "sss",
         "score": {
             0: s0n,
-            1: s0h
+            1: s0h,
+            2: s0e
         },
         "name": "シャイニングスター",
         "font": "Kaisei Opti",
