@@ -267,7 +267,7 @@ function notesGene(tuneConvTime, nowBeat) {
                 if (beat in notesData[keys[i]]) {
                     let time = beat * oneBeatTime * 2;
                     if (notesData[keys[i]][beat][0] == 1) {//単ノーツ
-                        let note = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 12.5, Fortis.Game.canvasCfg.size.x / 12.5)), new Fortis.ImageMaterial("cg"));
+                        let note = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 14, Fortis.Game.canvasCfg.size.x / 14)), new Fortis.ImageMaterial("cb"));
                         if (notesData[keys[i]][beat][1]) {//ポイント高めのノーツ
                             note.material.key = "cb";
                         }
@@ -282,11 +282,14 @@ function notesGene(tuneConvTime, nowBeat) {
                         pObjLayer.add(note);
                     } else {//ロングノーツ
                         let notes = new Fortis.EntityContainer();
-                        let noteHead = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 12.5, Fortis.Game.canvasCfg.size.x / 12.5)), new Fortis.ImageMaterial("sg"));
+                        let noteHead = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 18, Fortis.Game.canvasCfg.size.x / 18)), new Fortis.ImageMaterial("sb"));
                         noteHead.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
-                        let noteTail = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 12.5, Fortis.Game.canvasCfg.size.x / 12.5)), new Fortis.ImageMaterial("sb"));
+                        noteHead.angle = 45;
+                        let noteTail = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 18, Fortis.Game.canvasCfg.size.x / 18)), new Fortis.ImageMaterial("sb"));
                         noteTail.pos = new Fortis.Vector2(keyXPos, noteHead.pos.y - (notesData[keys[i]][beat][0] - 1) * oneBeatTime * 2 * notesSpeed);
-                        let noteBody = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 18, (notesData[keys[i]][beat][0] - 1) * oneBeatTime * 2 * notesSpeed), new Fortis.ColorMaterial(new Fortis.Color("#d0ff00")));
+                        noteTail.angle = 45;
+                        let noteBody = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 20, (notesData[keys[i]][beat][0] - 1) * oneBeatTime * 2 * notesSpeed), new Fortis.ColorMaterial(new Fortis.Color("#2132CD")));
+                        noteBody.alpha = 0.7
                         noteBody.pos = new Fortis.Vector2(keyXPos, (noteHead.pos.y + noteTail.pos.y) / 2);
 
                         notes.add(noteBody);
