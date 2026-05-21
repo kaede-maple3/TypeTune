@@ -7,6 +7,8 @@ let TuneName, TuneDiff;//曲名と難易度
 
 let keyTexts = [];//どのキーを押すのかを分かりやすくするやつ
 let timingReactions = [];//タイミングリアクション
+let TRTsTimeIds = [];//リアクションのテキストを消すタイマー
+const TRTsTime = 800;//リアクションのテキストが表示される時間(ms)
 
 //タイマー
 let tuneStartTimerID;//曲開始までのタイマー
@@ -35,6 +37,7 @@ let beatsStd;//拍の取り方の基準の新旧(beatsStdOaN参照)
 let notesLastBeatByKey = [];//キー毎の最後に生成したノーツの拍数
 let keys = [];//Spaceは別に用意
 let keysIsPushed = [];//keysの順番でtrue/false
+let longNotesPushed = [];//ロングノーツが押されているか
 
 function playReset() {
     pScene = new Fortis.Scene();
@@ -60,6 +63,7 @@ function playReset() {
     notesLastBeatByKey = [0, 0, 0, 0, 0];
     keys = ["D", "F", "J", "K"];
     keysIsPushed = [false, false, false, false];
+    longNotesPushed = [false, false, false, false];
 
 
     //アルファベット落下
@@ -136,10 +140,11 @@ function playReset() {
     //タイミングリアクション
     {
         for (let i = 0; i < keys.length; i++) {
-            let rt = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 20), ["D", "F", "J", "K", "Space"][i]), new Fortis.ColorMaterial(new Fortis.Color("white")));
+            let rt = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 25), ["D", "F", "J", "K", "Space"][i]), new Fortis.ColorMaterial(new Fortis.Color("white")));
             rt.pos = new Fortis.Vector2(pJudgeBar[i].pos.x + Fortis.Game.canvasCfg.size.x / 14.4, pJudgeBar[i].pos.y - Fortis.Game.canvasCfg.size.y / 18);
-            rt.alpha = 0.5;
+            rt.alpha = 0;
             timingReactions.push(rt);
+            TRTsTimeIds.push(Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2));
         }
 
         pUILayer.addEntities([...timingReactions]);
@@ -234,41 +239,51 @@ function pUpdate(delta) {
 function notesJudge(delta, tuneConvTime, nowBeat) {
     for (let i = 0; i < keys.length; i++) {
         if (Fortis.InputKey["Key" + keys[i]]) {
-            keysIsPushed[i] = true;
-            if (beatsStd) {//拍の基準が古い
-                let oldNB = Math.floor((nowBeat + 1) / 2);
-                //前後0.5拍分ずつを判定対象とする(0.42/0.32/0.2/0.07/0でmiss/bad/good/great/perfect)
-                for (let j = 0; j < notesObjs[i].length; j++) {
-                    let time = notesObjs[i][j].beat * oneBeatTime * 2;
-                    //console.log(tuneConvTime - time)
-                    if (Math.abs(tuneConvTime - time) <= oneBeatTime * 2 * 0.5) {//１拍の半分
-                        let diff = Math.abs(tuneConvTime - time);
+            if (keysIsPushed[i] != true) {
+                if (beatsStd) {//拍の基準が古い
+                    let oldNB = Math.floor((nowBeat + 1) / 2);
+                    //前後0.5拍分ずつを判定対象とする(0.42/0.32/0.2/0.07/0でmiss/bad/good/great/perfect)
+                    for (let j = 0; j < notesObjs[i].length; j++) {
+                        let time = notesObjs[i][j].beat * oneBeatTime * 2;
+                        //console.log(tuneConvTime - time)
+                        if (Math.abs(tuneConvTime - time) <= oneBeatTime * 2 * 0.5) {//１拍の半分
+                            let diff = Math.abs(tuneConvTime - time);
 
-                        //スコアやロングノーツ判定
-                        if (notesObjs[i][j].object instanceof Fortis.EntityContainer) {//ロングノーツ
+                            //スコアやロングノーツ判定
+                            if (notesObjs[i][j].object instanceof Fortis.EntityContainer) {//ロングノーツ
+                                longNotesPushed[i] = true;
+                            } else {
+                                timingReactions[i].alpha = 0.5;
+                                Fortis.TransitionManager.remove(TRTsTimeIds[i]);
+                                TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
+                                Fortis.TransitionManager.start(TRTsTimeIds[i]);
 
-                        } else {
-                            if (diff >= oneBeatTime * 2 * 0.42) {//miss
-                                timingReactions[i].shape.text = "Miss";
-                            } else if (diff >= oneBeatTime * 2 * 0.32) {//bad
-                                timingReactions[i].shape.text = "bad";
-                            } else if (diff >= oneBeatTime * 2 * 0.2) {//good
-                                timingReactions[i].shape.text = "good";
-                            } else if (diff >= oneBeatTime * 2 * 0.08) {//great
-                                timingReactions[i].shape.text = "great";
-                            } else {//perfect
-                                timingReactions[i].shape.text = "perfect";
+                                if (diff >= oneBeatTime * 2 * 0.45) {//miss
+                                    timingReactions[i].shape.text = "Miss";
+                                    timingReactions[i].material.fill = new Fortis.Color("#194CE0");
+                                } else if (diff >= oneBeatTime * 2 * 0.38) {//bad
+                                    timingReactions[i].shape.text = "Bad";
+                                    timingReactions[i].material.fill = new Fortis.Color("#19D2E0");
+                                } else if (diff >= oneBeatTime * 2 * 0.22) {//good
+                                    timingReactions[i].shape.text = "Good";
+                                    timingReactions[i].material.fill = new Fortis.Color("#4AE019");
+                                } else if (diff >= oneBeatTime * 2 * 0.05) {//great
+                                    timingReactions[i].shape.text = "Great";
+                                    timingReactions[i].material.fill = new Fortis.Color("#E0193A");
+                                } else {//perfect
+                                    timingReactions[i].shape.text = "Perfect";
+                                    timingReactions[i].material.fill = new Fortis.Color("#DEE019");
+                                }
+                                //削除
+                                pObjLayer.remove(notesObjs[i][j].obj);
+                                notesObjs[i].splice(j, 1);
+                                j--;
                             }
                         }
-
-                        //削除
-                        pObjLayer.remove(notesObjs[i][j].obj);
-                        notesObjs[i].splice(j, 1);
-                        j--;
-
                     }
                 }
             }
+            keysIsPushed[i] = true;
         } else {
             if (keysIsPushed[i]) {//押されていた
 
