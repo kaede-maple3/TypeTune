@@ -450,7 +450,7 @@ function tuneSelectChange(init) {
     stTuneBPMAndTime.shape.text = "BPM:" + tunesInfo[nowSelect].BPM + "               " + "時間:" + Math.floor(tunesInfo[nowSelect].time / 1000) + "秒";
 
     for (let i = 0; i < stDiffHighScoreTxt.length; i++) {
-        stDiffHighScoreTxt[i].shape.text = highScoreData[tunesInfo[nowSelect].data][i].toString().padStart(8, '0');
+        stDiffHighScoreTxt[i].shape.text = highScoreData[tunesInfo[nowSelect].data][i].toString().padStart(7, '0');
     }
 
     nowSound.pause();
