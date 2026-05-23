@@ -62,9 +62,9 @@ function Ready() {
     } else {
         console.log("localstorage対応");
         localStorage = true;
-        highScoreData = window.localStorage.getItem("highScore");
-        if(highScoreData == null){//ハイスコアデータが存在しない
-            console.log("ハイスコアデータが存在しないため、初期化します");
+        //highScoreData = window.localStorage.getItem("highScore");
+        //if(highScoreData == null){//ハイスコアデータが存在しない
+            //console.log("ハイスコアデータが存在しないため、初期化します");
             highScoreData = {
                 "sss":[
                     0,0,0,0
@@ -85,11 +85,11 @@ function Ready() {
                     0,0,0,0
                 ],
             }
-            window.localStorage.setItem("highScore",JSON.stringify(highScoreData));
-        }else{
-            console.log(highScoreData)
-            highScoreData = JSON.parse(highScoreData);
-        }
+            //window.localStorage.setItem("highScore",JSON.stringify(highScoreData));
+        //}else{
+            //console.log(highScoreData)
+            //highScoreData = JSON.parse(highScoreData);
+        //}
     }
 
     //タイトル
