@@ -40,6 +40,8 @@ let keysIsPushed = [];//keysの順番でtrue/false
 let longNotesPushed = [];//ロングノーツが押されているか
 let combo, maxCombo, comboText, comboDisplayText;//コンボ数、最高コンボ数コンボ数を表示
 let score, scoreText, scoreDisplayText, rankText;//スコア、スコアを表示、ランクを表示
+let fever, feverGageFlame, feverGage, feverText;//フィーバー(割合)
+const feverScore = [-0.01, 0.005, 0.007, 0.0085, 0.01];//フィーバーゲージの増え方miss/bad/good/great/perfect
 
 function playReset() {
     pScene = new Fortis.Scene();
@@ -69,6 +71,7 @@ function playReset() {
     combo = 0;
     maxCombo = 0;
     score = 0;
+    fever = 0;
 
 
     //アルファベット落下
@@ -158,23 +161,35 @@ function playReset() {
     //コンボ表示
     {
         comboText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 23), "Combo"), new Fortis.ColorMaterial(new Fortis.Color("white")));
-        comboText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 1.9);
+        comboText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 1.8);
         //comboText.alpha = 0.7;
         comboDisplayText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 12), "0"), new Fortis.ColorMaterial(new Fortis.Color("white")));
-        comboDisplayText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 2 + Fortis.Game.canvasCfg.size.y / 7);
+        comboDisplayText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 1.55);
         //comboDisplayText.alpha = 0.7;
         pUILayer.addEntities([comboText, comboDisplayText]);
     }
 
     //スコア・ランク表示
     {
-        scoreText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 28), "Score"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        scoreText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 25), "Score"), new Fortis.ColorMaterial(new Fortis.Color("white")));
         scoreText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.25, Fortis.Game.canvasCfg.size.y / 18);
-        scoreDisplayText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 17), "00000000"), new Fortis.ColorMaterial(new Fortis.Color("white")));
-        scoreDisplayText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 7);
-        rankText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 20), "Rank"), new Fortis.ColorMaterial(new Fortis.Color("white")));
-        rankText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 1.8 + Fortis.Game.canvasCfg.size.y / 12);
+        scoreDisplayText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 12), "00000000"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        scoreDisplayText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 6.5);
+        rankText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 22), "Rank"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        rankText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 1.15, Fortis.Game.canvasCfg.size.y / 3.3);
         pUILayer.addEntities([scoreText, scoreDisplayText, rankText]);
+    }
+
+    //フィーバーゲージ
+    {
+        feverText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Anton", Fortis.Game.canvasCfg.size.y / 25), "Fever"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        feverText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 11, Fortis.Game.canvasCfg.size.y / 18);
+        feverGage = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 11, Fortis.Game.canvasCfg.size.y / 1.25), new Fortis.ColorMaterial(new Fortis.Color("#b66262")));
+        feverGage.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 11, Fortis.Game.canvasCfg.size.y / 1.95 + Fortis.Game.canvasCfg.size.y / 2.5);
+        feverGageFlame = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x / 11, Fortis.Game.canvasCfg.size.y / 1.25), new Fortis.ColorMaterial(null, new Fortis.Color("white")));
+        feverGageFlame.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 11, Fortis.Game.canvasCfg.size.y / 1.95);
+        pUILayer.addEntities([feverText, feverGage, feverGageFlame]);
+        ComboScoreFeverChange(0);
     }
 
     //タイマー
@@ -266,56 +281,218 @@ function pUpdate(delta) {
 function notesJudge(delta, tuneConvTime, nowBeat) {
     for (let i = 0; i < keys.length; i++) {
         if (Fortis.InputKey["Key" + keys[i]]) {
-            if (keysIsPushed[i] != true) {
+            if (keysIsPushed[i] <= 3) {
                 if (beatsStd) {//拍の基準が古い
-                    let oldNB = Math.floor((nowBeat + 1) / 2);
                     //前後0.5拍分ずつを判定対象とする(0.42/0.32/0.2/0.07/0でmiss/bad/good/great/perfect)
                     for (let j = 0; j < notesObjs[i].length; j++) {
                         let time = notesObjs[i][j].beat * oneBeatTime * 2;
                         //console.log(tuneConvTime - time)
                         if (Math.abs(tuneConvTime - time) <= oneBeatTime * 2 * 0.5) {//１拍の半分
+                            keysIsPushed[i] = 4;
+                            
                             let diff = Math.abs(tuneConvTime - time);
 
-                            //スコアやロングノーツ判定
-                            if (notesObjs[i][j].object instanceof Fortis.EntityContainer) {//ロングノーツ
-                                longNotesPushed[i] = true;
-                            } else {
-                                timingReactions[i].alpha = 0.5;
-                                Fortis.TransitionManager.remove(TRTsTimeIds[i]);
-                                TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
-                                Fortis.TransitionManager.start(TRTsTimeIds[i]);
+                            let scoreDelta = notesObjs[i][j]["scoreBasis"] * notesObjs[i][j]["length"];
 
-                                if (diff >= oneBeatTime * 2 * 0.45) {//miss
-                                    timingReactions[i].shape.text = "Miss";
-                                    timingReactions[i].material.fill = new Fortis.Color("#194CE0");
-                                } else if (diff >= oneBeatTime * 2 * 0.38) {//bad
-                                    timingReactions[i].shape.text = "Bad";
-                                    timingReactions[i].material.fill = new Fortis.Color("#19D2E0");
-                                } else if (diff >= oneBeatTime * 2 * 0.22) {//good
-                                    timingReactions[i].shape.text = "Good";
-                                    timingReactions[i].material.fill = new Fortis.Color("#4AE019");
-                                } else if (diff >= oneBeatTime * 2 * 0.05) {//great
-                                    timingReactions[i].shape.text = "Great";
-                                    timingReactions[i].material.fill = new Fortis.Color("#E0193A");
-                                } else {//perfect
-                                    timingReactions[i].shape.text = "Perfect";
-                                    timingReactions[i].material.fill = new Fortis.Color("#DEE019");
-                                }
+                            timingReactions[i].alpha = 0.5;
+                            if (Fortis.TransitionManager.get(TRTsTimeIds[i]) !== false) Fortis.TransitionManager.remove(TRTsTimeIds[i]);
+                            TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
+                            Fortis.TransitionManager.start(TRTsTimeIds[i]);
+                            if (diff >= oneBeatTime * 2 * 0.41) {//bad
+                                timingReactions[i].shape.text = "Bad";
+                                timingReactions[i].material.fill = new Fortis.Color("#19D2E0");
+                                combo++;
+                                fever += feverScore[1];
+                                scoreDelta *= 0.9;
+                            } else if (diff >= oneBeatTime * 2 * 0.3) {//good
+                                timingReactions[i].shape.text = "Good";
+                                timingReactions[i].material.fill = new Fortis.Color("#4AE019");
+                                combo++;
+                                fever += feverScore[1];
+                            } else if (diff >= oneBeatTime * 2 * 0.1) {//great
+                                timingReactions[i].shape.text = "Great";
+                                timingReactions[i].material.fill = new Fortis.Color("#E0193A");
+                                combo++;
+                                fever += feverScore[3];
+                                scoreDelta *= 1.25;
+                            } else {//perfect
+                                timingReactions[i].shape.text = "Perfect";
+                                timingReactions[i].material.fill = new Fortis.Color("#DEE019");
+                                combo++;
+                                fever += feverScore[1];
+                                scoreDelta *= 1.5;
+                            }
+
+                            //スコアやロングノーツ判定
+                            if (notesObjs[i][j].obj instanceof Fortis.EntityContainer) {//ロングノーツ
+                                longNotesPushed[i] = notesObjs[i][j];
+                                ComboScoreFeverChange(0);
+                            } else {
+                                maxCombo = Math.max(combo, maxCombo);
+                                ComboScoreFeverChange(scoreDelta);
                                 //削除
                                 pObjLayer.remove(notesObjs[i][j].obj);
                                 notesObjs[i].splice(j, 1);
-                                j--;
                             }
+                            break;
+                        }
+                    }
+                } else {
+                    //前後0.5拍分ずつを判定対象とする(0.42/0.32/0.2/0.07/0でmiss/bad/good/great/perfect)
+                    for (let j = 0; j < notesObjs[i].length; j++) {
+                        let time = notesObjs[i][j].beat * oneBeatTime;
+                        //console.log(tuneConvTime - time)
+                        if (Math.abs(tuneConvTime - time) <= oneBeatTime * 0.5) {//１拍の半分
+                            keysIsPushed[i] = 4;
+
+                            let diff = Math.abs(tuneConvTime - time);
+
+                            let scoreDelta = notesObjs[i][j]["scoreBasis"] * notesObjs[i][j]["length"];
+
+                            timingReactions[i].alpha = 0.5;
+                            if (Fortis.TransitionManager.get(TRTsTimeIds[i]) !== false) Fortis.TransitionManager.remove(TRTsTimeIds[i]);
+                            TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
+                            Fortis.TransitionManager.start(TRTsTimeIds[i]);
+
+                            if (diff >= oneBeatTime * 0.41) {//bad
+                                timingReactions[i].shape.text = "Bad";
+                                timingReactions[i].material.fill = new Fortis.Color("#19D2E0");
+                                combo++;
+                                fever += feverScore[1];
+                                scoreDelta *= 0.9;
+                            } else if (diff >= oneBeatTime * 0.3) {//good
+                                timingReactions[i].shape.text = "Good";
+                                timingReactions[i].material.fill = new Fortis.Color("#4AE019");
+                                combo++;
+                                fever += feverScore[1];
+                            } else if (diff >= oneBeatTime * 0.1) {//great
+                                timingReactions[i].shape.text = "Great";
+                                timingReactions[i].material.fill = new Fortis.Color("#E0193A");
+                                combo++;
+                                fever += feverScore[3];
+                                scoreDelta *= 1.25;
+                            } else {//perfect
+                                timingReactions[i].shape.text = "Perfect";
+                                timingReactions[i].material.fill = new Fortis.Color("#DEE019");
+                                combo++;
+                                fever += feverScore[1];
+                                scoreDelta *= 1.5;
+                            }
+
+                            //スコアやロングノーツ判定
+                            if (notesObjs[i][j].obj instanceof Fortis.EntityContainer) {//ロングノーツ
+                                longNotesPushed[i] = notesObjs[i][j];
+                                ComboScoreFeverChange(0);
+                            } else {
+                                maxCombo = Math.max(combo, maxCombo);
+                                ComboScoreFeverChange(scoreDelta);
+                                //削除
+                                pObjLayer.remove(notesObjs[i][j].obj);
+                                notesObjs[i].splice(j, 1);
+                            }
+                            break;
                         }
                     }
                 }
             }
-            keysIsPushed[i] = true;
+            keysIsPushed[i]++;
         } else {
-            if (keysIsPushed[i]) {//押されていた
+            if (keysIsPushed[i] != 0) {//押されていた
+                if (longNotesPushed[i] != false) {//ロングノーツが押されている
+                    timingReactions[i].alpha = 0.5;
+                    if (Fortis.TransitionManager.get(TRTsTimeIds[i]) !== false) Fortis.TransitionManager.remove(TRTsTimeIds[i]);
+                    TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
+                    Fortis.TransitionManager.start(TRTsTimeIds[i]);
+                    let scoreDelta = 0;
+                    if (beatsStd) {
+                        let time = (longNotesPushed[i].beat + longNotesPushed[i]["length"] - 1) * oneBeatTime * 2;
+                        let diff = Math.abs(tuneConvTime - time);
+                        scoreDelta = longNotesPushed[i]["scoreBasis"] * longNotesPushed[i]["length"];
+                        if (diff <= oneBeatTime * 2 * 0.5) {
 
+                            
+
+                            if (diff >= oneBeatTime * 2 * 0.41) {//bad
+                                timingReactions[i].shape.text = "Bad";
+                                timingReactions[i].material.fill = new Fortis.Color("#19D2E0");
+                                combo += longNotesPushed[i]["length"] * 2;
+                                fever += feverScore[1];
+                                scoreDelta *= 0.9;
+                            } else if (diff >= oneBeatTime * 2 * 0.3) {//good
+                                timingReactions[i].shape.text = "Good";
+                                timingReactions[i].material.fill = new Fortis.Color("#4AE019");
+                                combo += longNotesPushed[i]["length"] * 2;
+                                fever += feverScore[1];
+                            } else if (diff >= oneBeatTime * 2 * 0.1) {//great
+                                timingReactions[i].shape.text = "Great";
+                                timingReactions[i].material.fill = new Fortis.Color("#E0193A");
+                                combo += longNotesPushed[i]["length"] * 2;
+                                fever += feverScore[3];
+                                scoreDelta *= 1.25;
+                            } else {//perfect
+                                timingReactions[i].shape.text = "Perfect";
+                                timingReactions[i].material.fill = new Fortis.Color("#DEE019");
+                                combo += longNotesPushed[i]["length"] * 2;
+                                fever += feverScore[1];
+                                scoreDelta *= 1.5;
+                            }
+                        } else {
+                            timingReactions[i].shape.text = "Miss";
+                            timingReactions[i].material.fill = new Fortis.Color("#194CE0");
+                            fever += feverScore[0];
+                            scoreDelta*=0.5;
+                        }
+                    } else {
+                        let time = (longNotesPushed[i].beat + longNotesPushed[i]["length"] - 1) * oneBeatTime;
+                        let diff = Math.abs(tuneConvTime - time);
+                        scoreDelta = longNotesPushed[i]["scoreBasis"] * longNotesPushed[i]["length"];
+                        if (diff <= oneBeatTime * 0.5) {
+                            if (diff >= oneBeatTime * 0.41) {//bad
+                                timingReactions[i].shape.text = "Bad";
+                                timingReactions[i].material.fill = new Fortis.Color("#19D2E0");
+                                combo += longNotesPushed[i]["length"];
+                                fever += feverScore[1];
+                                scoreDelta *= 0.9;
+                            } else if (diff >= oneBeatTime * 0.3) {//good
+                                timingReactions[i].shape.text = "Good";
+                                timingReactions[i].material.fill = new Fortis.Color("#4AE019");
+                                combo += longNotesPushed[i]["length"];
+                                fever += feverScore[1];
+                            } else if (diff >= oneBeatTime * 0.1) {//great
+                                timingReactions[i].shape.text = "Great";
+                                timingReactions[i].material.fill = new Fortis.Color("#E0193A");
+                                combo += longNotesPushed[i]["length"];
+                                fever += feverScore[3];
+                                scoreDelta *= 1.25;
+                            } else {//perfect
+                                timingReactions[i].shape.text = "Perfect";
+                                timingReactions[i].material.fill = new Fortis.Color("#DEE019");
+                                combo += longNotesPushed[i]["length"];
+                                fever += feverScore[1];
+                                scoreDelta *= 1.5;
+                            }
+                        } else {
+                            timingReactions[i].shape.text = "Miss";
+                            timingReactions[i].material.fill = new Fortis.Color("#194CE0");
+                            fever += feverScore[0];
+                            scoreDelta *= 0.5;
+                        }
+                    }
+
+                    for (let j = 0; j < notesObjs[i].length; j++) {
+                        if (notesObjs[i][j].obj.id == longNotesPushed[i].obj.id) {
+                            pObjLayer.remove(notesObjs[i][j].obj);
+                            notesObjs[i].splice(j, 1);
+                            break;
+                        }
+                    }
+                    longNotesPushed[i] = false;
+
+                    maxCombo = Math.max(combo, maxCombo);
+                    ComboScoreFeverChange(scoreDelta);
+                }
             }
-            keysIsPushed[i] = false;
+            keysIsPushed[i] = 0;
         }
     }
 }
@@ -328,6 +505,21 @@ function notesMoving(delta) {
                     note.entity.pos.y += notesSpeed * delta;
                 });
                 if (notesObjs[i][j].obj.entity[2].entity.pos.y > Fortis.Game.canvasCfg.size.y + Fortis.Game.canvasCfg.size.x / 10) {
+                    timingReactions[i].alpha = 0.5;
+                    if (Fortis.TransitionManager.get(TRTsTimeIds[i]) !== false) Fortis.TransitionManager.remove(TRTsTimeIds[i]);
+                    TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
+                    Fortis.TransitionManager.start(TRTsTimeIds[i]);
+                    timingReactions[i].shape.text = "Miss";
+                    timingReactions[i].material.fill = new Fortis.Color("#194CE0");
+                    if (longNotesPushed[i] != false && (notesObjs[i][j].obj.id == longNotesPushed[i]["obj"].id)) {
+                        longNotesPushed[i] = false;
+                    } else {
+                        combo = 0;
+                        maxCombo = Math.max(combo, maxCombo);
+                        fever += feverScore[0];
+                        ComboScoreFeverChange(0);
+                    }
+
                     pObjLayer.remove(notesObjs[i][j].obj);
                     notesObjs[i].splice(j, 1);
                     j--;
@@ -336,6 +528,17 @@ function notesMoving(delta) {
                 notesObjs[i][j].obj.pos.y += notesSpeed * delta;
                 //画面外に出たら削除
                 if (notesObjs[i][j].obj.pos.y > Fortis.Game.canvasCfg.size.y + Fortis.Game.canvasCfg.size.x / 10) {
+                    if (Fortis.TransitionManager.get(TRTsTimeIds[i]) !== false) Fortis.TransitionManager.remove(TRTsTimeIds[i]);
+                    TRTsTimeIds[i] = Fortis.TransitionManager.add(timingReactions[i], "alpha", TRTsTime, 0.5, 0, Fortis.util.easing.inOutPower, 2);
+                    Fortis.TransitionManager.start(TRTsTimeIds[i]);
+                    timingReactions[i].alpha = 0.5;
+                    timingReactions[i].shape.text = "Miss";
+                    timingReactions[i].material.fill = new Fortis.Color("#194CE0");
+                    combo = 0;
+                    maxCombo = Math.max(combo, maxCombo);
+                    fever += feverScore[0];
+                    ComboScoreFeverChange(0);
+
                     pObjLayer.remove(notesObjs[i][j].obj);
                     notesObjs[i].splice(j, 1);
                     j--;
@@ -345,6 +548,42 @@ function notesMoving(delta) {
             }
         }
     }
+}
+
+function ComboScoreFeverChange(scoreDelta) {
+    //コンボ
+    comboDisplayText.shape.text = combo;
+    scoreDisplayText.shape.text = score.toString().padStart(8, '0');
+
+    //フィーバーゲージによるスコア倍率
+    let scoreMag = 1;
+
+    //フィーバー
+    if (fever > 1) fever = 1;
+    if (fever < 0) fever = 0;
+    feverGage.shape.size.y = (Fortis.Game.canvasCfg.size.y / 1.25) * fever;
+    feverGage.shape.distance.y = -feverGage.shape.size.y / 2;
+    if (fever < 0.1) {
+        feverGage.material.fill = new Fortis.Color("#194CE0");
+    } else if (fever < 0.2) {
+        feverGage.material.fill = new Fortis.Color("#194CE0");
+        scoreMag = 1.1;
+    } else if (fever < 0.4) {
+        feverGage.material.fill = new Fortis.Color("#19D2E0");
+        scoreMag = 1.2;
+    } else if (fever < 0.6) {
+        feverGage.material.fill = new Fortis.Color("#4AE019");
+        scoreMag = 1.3;
+    } else if (fever < 0.8) {
+        feverGage.material.fill = new Fortis.Color("#E0193A");
+        scoreMag = 1.4;
+    } else {
+        feverGage.material.fill = new Fortis.Color("#DEE019");
+        scoreMag = 1.5;
+    }
+
+    score += Math.floor((scoreDelta * scoreMag * Math.floor(Math.log(combo ** (1 / 3) + Math.E) * 10) / 10) / 10) * 10;
+    scoreDisplayText.shape.text = score.toString().padStart(7, '0');
 }
 
 function notesGene(tuneConvTime, nowBeat) {
@@ -359,8 +598,10 @@ function notesGene(tuneConvTime, nowBeat) {
                     let time = beat * oneBeatTime * 2;
                     if (notesData[keys[i]][beat][0] == 1) {//単ノーツ
                         let note = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 14, Fortis.Game.canvasCfg.size.x / 14)), new Fortis.ImageMaterial("cb"));
+                        let scoreBasis = 100;
                         if (notesData[keys[i]][beat][1]) {//ポイント高めのノーツ
                             note.material.key = "cg";
+                            scoreBasis = 200;
                         }
 
                         note.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
@@ -368,10 +609,12 @@ function notesGene(tuneConvTime, nowBeat) {
                         notesObjs[i].push({
                             "obj": note,
                             "beat": beat,
-                            "point": notesData[keys[i]][beat][1],
+                            "length": 1,
+                            "scoreBasis": scoreBasis,
                         });
                         pObjLayer.add(note);
                     } else {//ロングノーツ
+                        let scoreBasis = beat;
                         let notes = new Fortis.EntityContainer();
                         let noteHead = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 18, Fortis.Game.canvasCfg.size.x / 18)), new Fortis.ImageMaterial("sb"));
                         noteHead.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
@@ -386,6 +629,7 @@ function notesGene(tuneConvTime, nowBeat) {
                             noteHead.material.key = "sg";
                             noteTail.material.key = "sg";
                             noteBody.material.fill = new Fortis.Color("#23D129");
+                            scoreBasis = beat;
                         }
 
                         notes.add(noteBody);
@@ -395,7 +639,8 @@ function notesGene(tuneConvTime, nowBeat) {
                         notesObjs[i].push({
                             "obj": notes,
                             "beat": beat,
-                            "point": notesData[keys[i]][beat][1],
+                            "length": notesData[keys[i]][beat][0],
+                            "scoreBasis": scoreBasis,
                         });
                         pObjLayer.add(notes);
                     }
@@ -411,9 +656,11 @@ function notesGene(tuneConvTime, nowBeat) {
                 if (beat in notesData[keys[i]]) {
                     let time = beat * oneBeatTime;
                     if (notesData[keys[i]][beat][0] == 1) {//単ノーツ
+                        scoreBasis = 100;
                         let note = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 14, Fortis.Game.canvasCfg.size.x / 14)), new Fortis.ImageMaterial("cb"));
                         if (notesData[keys[i]][beat][1]) {//ポイント高めのノーツ
                             note.material.key = "cg";
+                            scoreBasis = 200;
                         }
 
                         note.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
@@ -421,10 +668,12 @@ function notesGene(tuneConvTime, nowBeat) {
                         notesObjs[i].push({
                             "obj": note,
                             "beat": beat,
-                            "point": notesData[keys[i]][beat][1],
+                            "length": 1,
+                            "scoreBasis": scoreBasis,
                         });
                         pObjLayer.add(note);
                     } else {//ロングノーツ
+                        let scoreBasis = 100;
                         let notes = new Fortis.EntityContainer();
                         let noteHead = new Fortis.Entity(new Fortis.ImageShape(new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 18, Fortis.Game.canvasCfg.size.x / 18)), new Fortis.ImageMaterial("sb"));
                         noteHead.pos = new Fortis.Vector2(keyXPos, (tuneConvTime - time) * notesSpeed - Fortis.Game.canvasCfg.size.y / 1.15);
@@ -439,6 +688,7 @@ function notesGene(tuneConvTime, nowBeat) {
                             noteHead.material.key = "sg";
                             noteTail.material.key = "sg";
                             noteBody.material.fill = new Fortis.Color("#23D129");
+                            scoreBasis = 200;
                         }
 
                         notes.add(noteBody);
@@ -448,7 +698,8 @@ function notesGene(tuneConvTime, nowBeat) {
                         notesObjs[i].push({
                             "obj": notes,
                             "beat": beat,
-                            "point": notesData[keys[i]][beat][1],
+                            "length": notesData[keys[i]][beat][0],
+                            "scoreBasis": scoreBasis,
                         });
                         pObjLayer.add(notes);
                     }
