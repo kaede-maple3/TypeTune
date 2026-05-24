@@ -23,7 +23,6 @@ let waitStartTime;//開始待機時間
 let nowPlaying;//現在再生中かどうか
 let notesStarted;//ノーツ生成が開始されたか
 let judgeStarted;//判定が開始されたか
-let notesSpeedPer;//ノーツの速度(%表示)
 const DefNotesDisplayTime = 1000;//デフォルトのノーツが表示される時間(ms)
 let notesDisplayTime;//ノーツの表示時間
 let notesSpeed;//ノーツの実速度(/msだからdeltaをそのままかける)
@@ -60,7 +59,6 @@ function playReset() {
 
     waitStartTime = 5000;
     nowPlaying = false;
-    notesSpeedPer = 100;
     notesDisplayTime = DefNotesDisplayTime * (notesSpeedPer / 100);
     notesSpeed = (Fortis.Game.canvasCfg.size.y / 1.15) / notesDisplayTime;
     tuneBPM = tunesInfo[nowSelect].BPM;
