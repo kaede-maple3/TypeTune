@@ -122,6 +122,9 @@ function Update(delta) {
         case "play":
             pUpdate(delta);
             break;
+        case "result":
+            rUpdate(delta);
+            break;
     }
 }
 
