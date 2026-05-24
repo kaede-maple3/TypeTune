@@ -32,6 +32,10 @@ let stDiffBG = [];
 let stDiffHighScoreTxt = [];
 let nowSound;//選択した曲の音源
 
+let notesSpeedPer;//ノーツの速度割合(パーセント表示)
+let NSValueText, NSKeyText;//ノーツの速度を表示するやつ
+let canNSKeyInput, canNSKIPTimerID;//ノーツの速度を変更するキーが押されたか
+
 //ゲームスタート管理
 let sCfmLayer;
 let confirmStart = false;//trueなら確認画面表示
@@ -53,6 +57,9 @@ function selectReset() {
 
     //シーンが始まった時間
     sSceneTime = performance.now();
+
+    notesSpeedPer = 100;
+    canNSKeyInput = true;
 
     //アルファベット落下
     {
@@ -211,6 +218,16 @@ function selectReset() {
         sObjLayer.addEntities([stFlameBG, stFlame, stTuneULine, stTuneName, stTuneCredit, stTuneBPMAndTime, ...stDiffBG, ...stDiffHighScoreTxt, stEasyFlame, stNormalFlame, stHardFlame, stExstraFlame, stEasyText, stNormalText, stHardText, stExstraText]);
     }
 
+    //ノーツの速度を表示
+    {
+        NSValueText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 30), "ノーツ表示時間:" + notesSpeedPer + "%"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        NSValueText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2.2, Fortis.Game.canvasCfg.size.y / 1.1);
+        NSKeyText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 30), "ー Q：E ＋"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        NSKeyText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2.2, Fortis.Game.canvasCfg.size.y / 1.17);
+
+        sUILayer.addEntities([NSValueText, NSKeyText]);
+    }
+
     //選曲確認画面
     {
         cfmBG = new Fortis.Entity(new Fortis.RectShape(Fortis.Game.canvasCfg.size.x, Fortis.Game.canvasCfg.size.y), new Fortis.ColorMaterial(new Fortis.Color("black")));
@@ -312,6 +329,30 @@ function sUpdate(delta) {
                 Fortis.TransitionManager.start(sBoTID);
             }
         } else {
+            if (canNSKeyInput) {
+                if (Fortis.InputKey["KeyQ"]) {
+                    canNSKeyInput = false;
+                    canNSKIPTimerID = Fortis.Timer.add(canSelectKeyInputTime-150, false, function () {
+                        canNSKeyInput = true;
+                    });
+                    Fortis.Timer.start(canNSKIPTimerID);
+                    notesSpeedPer--;
+                    if (notesSpeedPer < 50) notesSpeedPer = 50;
+                    NSValueText.shape.text = "ノーツ表示時間:" + notesSpeedPer + "%";
+                }
+                if (Fortis.InputKey["KeyE"]) {
+                    canNSKeyInput = false;
+                    canNSKIPTimerID = Fortis.Timer.add(canSelectKeyInputTime-150, false, function () {
+                        canNSKeyInput = true;
+                    });
+                    Fortis.Timer.start(canNSKIPTimerID);
+                    notesSpeedPer++;
+                    if (notesSpeedPer > 150) notesSpeedPer = 150;
+                    NSValueText.shape.text = "ノーツ表示時間:" + notesSpeedPer + "%";
+                }
+            }
+
+
             //選曲確認
             if (Fortis.InputKey["Enter"] || Fortis.InputKey["Space"]) {
                 confirmStart = true;
