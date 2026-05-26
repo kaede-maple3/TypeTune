@@ -34,7 +34,7 @@ function Init() {
         "sg": "./img/notes/sg.png",
         "tuneTxtBG": "./img/ui/tuneTxtBG.png",
         "tuneTxtBGselected": "./img/ui/tuneTxtBGselected.png",
-        "ArrowRight":"./img/ui/ArrowRight.png",
+        "ArrowRight": "./img/ui/ArrowRight.png",
     });
 
     Fortis.SoundLoader.addSimpleSounds({
@@ -55,6 +55,7 @@ let localStorage;
 let highScoreData;
 
 function Ready() {
+    /*
     //ローカルストレージ確認
     if (!window.localStorage) {
         console.log("localstorage非対応");
@@ -64,33 +65,34 @@ function Ready() {
         localStorage = true;
         //highScoreData = window.localStorage.getItem("highScore");
         //if(highScoreData == null){//ハイスコアデータが存在しない
-            //console.log("ハイスコアデータが存在しないため、初期化します");
-            highScoreData = {
-                "sss":[
-                    0,0,0,0
-                ],
-                "bh":[
-                    0,0,0,0
-                ],
-                "forElise":[
-                    0,0,0,0
-                ],
-                "hal":[
-                    0,0,0,0
-                ],
-                "kimigayo":[
-                    0,0,0,0
-                ],
-                "alps1":[
-                    0,0,0,0
-                ],
-            }
-            //window.localStorage.setItem("highScore",JSON.stringify(highScoreData));
+        //console.log("ハイスコアデータが存在しないため、初期化します");
+        highScoreData = {
+            "sss": [
+                0, 0, 0, 0
+            ],
+            "bh": [
+                0, 0, 0, 0
+            ],
+            "forElise": [
+                0, 0, 0, 0
+            ],
+            "hal": [
+                0, 0, 0, 0
+            ],
+            "kimigayo": [
+                0, 0, 0, 0
+            ],
+            "alps1": [
+                0, 0, 0, 0
+            ],
+        }
+        //window.localStorage.setItem("highScore",JSON.stringify(highScoreData));
         //}else{
-            //console.log(highScoreData)
-            //highScoreData = JSON.parse(highScoreData);
+        //console.log(highScoreData)
+        //highScoreData = JSON.parse(highScoreData);
         //}
     }
+        */
 
     //タイトル
 
@@ -129,3 +131,16 @@ function Update(delta) {
 }
 
 function EngineLoaded() { }
+
+/*
+fetch("https://script.google.com/macros/s/AKfycbwgdRWGvwV41YCMHUkcTYhY_y7KgWuykvce_8eHSHTvgfjwoHUoT3sKoAbEBG_3dJp-vQ/exec", {
+  method: "POST",
+  body: JSON.stringify({
+    type: "getFirst"
+  })
+})
+.then(res => res.json())
+.then(data => {
+  console.log(data.message);
+});
+*/
