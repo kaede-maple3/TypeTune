@@ -4,6 +4,8 @@ let rloRect, rLoID;//最初の暗転
 
 let rTuneName, rDiff;//曲名、難易度を表示
 let resultText;//左上のリザルトの文字
+let communicatingText;//通信中のテキスト
+let communicated, message;
 
 let CAText, FAText, SText, FSText, RText;//素点、フィーバー・コンボ加点、最終スコア・ランク 
 let scoreTMP;
@@ -90,6 +92,30 @@ function resultReset() {
 
         rUILayer.addEntities([SText, CAText, FAText, FSText, RText]);
     }
+
+    //通信中のテキスト
+    {
+        communicatingText = new Fortis.Entity(new Fortis.TextShape(new Fortis.Font("Zen Maru Gothic", Fortis.Game.canvasCfg.size.y / 18), "通信中...少しお待ちください。"), new Fortis.ColorMaterial(new Fortis.Color("white")));
+        communicatingText.pos = new Fortis.Vector2(Fortis.Game.canvasCfg.size.x / 2, RText.pos.y + Fortis.Game.canvasCfg.size.y / 8);
+        communicatingText.alpha = 0;
+        rUILayer.add(communicatingText);
+        communicated = false;
+        fetch("https://script.google.com/macros/s/AKfycbwgdRWGvwV41YCMHUkcTYhY_y7KgWuykvce_8eHSHTvgfjwoHUoT3sKoAbEBG_3dJp-vQ/exec", {
+            method: "POST",
+            body: JSON.stringify({
+                type: "checkHighScore",
+                score: finalScore,
+                tuneIndex: nowSelect,
+                diff: nowDifficulty,
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                communicated = true;
+                message = data.message;
+                console.log(data.message);
+            });
+    }
 }
 
 function rUpdate(delta) {
@@ -124,13 +150,20 @@ function rUpdate(delta) {
     } else if (scoreActing == 1) {//動作中
         scoreTMP += Math.floor(finalScore * (delta / 1800));
         if (scoreTMP > finalScore) {
-            scoreTMP = finalScore;
             scoreActing = 2;
         }
-        FSText.shape.text = scoreTMP.toString().padStart(8, '0');
+        FSText.shape.text = scoreTMP.toString().padStart(7, '0');
     } else if (scoreActing == 2) {//終了
+        scoreTMP = finalScore;
+        FSText.shape.text = scoreTMP.toString().padStart(7, '0');
         RText.alpha = 1;
-        //ここで通信
+        communicatingText.alpha = 1;
+        if (communicated) {
+            scoreActing = 3;
+            communicatingText.shape.text = message;
+        }
+    } else if (scoreActing == 3) {//ハイスコアかもの通信が終わった。
+
     }
 
 }
