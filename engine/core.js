@@ -164,14 +164,25 @@ Fortis.setup = function () {
     Fortis.Game.init();//ゲームシステムの初期化。素材の読み込みの設定などもここでやる
     Fortis.loadMaterials()
         .then(() => {
-            document.body.removeChild(nowLoadingText);
-            Ready();//ゲームが初期化された後に実行
-            if (Fortis.Game.config.loop) {//ゲームループをするか
-                Fortis.info.StartGameLoop();
-                Fortis.Game.loop();//ゲームループスタート
-            } else {
-                EngineLoaded();//エンジンが読み込まれた
-            }
+            fetch("https://script.google.com/macros/s/AKfycbwgdRWGvwV41YCMHUkcTYhY_y7KgWuykvce_8eHSHTvgfjwoHUoT3sKoAbEBG_3dJp-vQ/exec", {
+                method: "POST",
+                body: JSON.stringify({
+                    type: "getFirst"
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.body.removeChild(nowLoadingText);
+                Ready();//ゲームが初期化された後に実行
+                if (Fortis.Game.config.loop) {//ゲームループをするか
+                    Fortis.info.StartGameLoop();
+                    Fortis.Game.loop();//ゲームループスタート
+                } else {
+                    EngineLoaded();//エンジンが読み込まれた
+                }
+                highScoreData = data.message;
+                console.log(data.message);
+            });
         })
         .catch((error) => {
             console.log(error)
@@ -388,7 +399,7 @@ Fortis.Game = {
             if (!layer.camera.keepSize) {
                 layer.camera.size = this.canvasCfg.size;
             }
-            if(!layer.camera.keepDRange){
+            if (!layer.camera.keepDRange) {
                 layer.camera.displayRange = this.canvasCfg.size;
             }
 
