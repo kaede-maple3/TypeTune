@@ -53,6 +53,7 @@ function Init() {
 let nowScene;
 let localStorage;
 let highScoreData;
+const gasURL = "https://script.google.com/macros/s/AKfycbyqWkwOrSC6mahRHKENYFjL7RLzCZG9HtGJ1kbUHJxrr5CouaVHn2FrZcsqDK0y2X2DUg/exec";
 
 function Ready() {
     /*
