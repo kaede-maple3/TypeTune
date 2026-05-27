@@ -164,7 +164,7 @@ Fortis.setup = function () {
     Fortis.Game.init();//ゲームシステムの初期化。素材の読み込みの設定などもここでやる
     Fortis.loadMaterials()
         .then(() => {
-            fetch("https://script.google.com/macros/s/AKfycbwgdRWGvwV41YCMHUkcTYhY_y7KgWuykvce_8eHSHTvgfjwoHUoT3sKoAbEBG_3dJp-vQ/exec", {
+            fetch(gasURL, {
                 method: "POST",
                 body: JSON.stringify({
                     type: "getFirst"
@@ -181,7 +181,11 @@ Fortis.setup = function () {
                     EngineLoaded();//エンジンが読み込まれた
                 }
                 highScoreData = data.message;
-                console.log(data.message);
+                //console.log(data.message);
+            })
+            .catch((error)=>{
+                console.error(error);
+                Fortis.loadfail();
             });
         })
         .catch((error) => {
