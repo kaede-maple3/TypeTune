@@ -100,7 +100,7 @@ function resultReset() {
         communicatingText.alpha = 0;
         rUILayer.add(communicatingText);
         communicated = false;
-        fetch("https://script.google.com/macros/s/AKfycbwgdRWGvwV41YCMHUkcTYhY_y7KgWuykvce_8eHSHTvgfjwoHUoT3sKoAbEBG_3dJp-vQ/exec", {
+        fetch(gasURL, {
             method: "POST",
             body: JSON.stringify({
                 type: "checkHighScore",
@@ -113,7 +113,12 @@ function resultReset() {
             .then(data => {
                 communicated = true;
                 message = data.message;
-                console.log(data.message);
+                //console.log(data.message);
+            })
+            .catch((error)=>{
+                communicated = true;
+                message="通信エラーが発生しました。";
+                console.error(error);
             });
     }
 }
@@ -163,7 +168,9 @@ function rUpdate(delta) {
             communicatingText.shape.text = message;
         }
     } else if (scoreActing == 3) {//ハイスコアかもの通信が終わった。
-
+        if(Fortis.InputKey["Space"]){
+            location.reload();
+        }
     }
 
 }
