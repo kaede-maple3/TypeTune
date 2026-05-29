@@ -1,21 +1,21 @@
 let beatsStdOaN = [//old=true/new=false
     [//シャイニングスター
-        true,true,false
+        false,true,true,false
     ],
     [//Burning Heart
-        true,true
+        false,true,true,false
     ],
     [//エリーゼのために
-        true,true
+        false,true,true,false
     ],
     [//ハルジオン
-        true,true
+        false,true,true,false
     ],
     [//君が代
-        true,true
+        false,true,true,false
     ],
     [//アルプス一万尺
-        true,true
+        false,true,true,false
     ],
 ]
 
@@ -41,9 +41,10 @@ let tunesInfo = [
     {
         "data": "sss",
         "score": {
-            0: s0n,
-            1: s0h,
-            2: s0e
+            0: s0e,
+            1: s0n,
+            2: s0h,
+            3: s0ex,
         },
         "name": "シャイニングスター",
         "font": "Kaisei Opti",
@@ -58,8 +59,10 @@ let tunesInfo = [
     {
         "data": "bh",
         "score": {
-            0:s1n,
-            1:s1h,
+            0: s1e,
+            1: s1n,
+            2: s1h,
+            3: s1ex,
         },
         "name": "Burning Heart",
         "font": "Reggae One",//仮
@@ -74,8 +77,10 @@ let tunesInfo = [
     {
         "data": "forElise",
         "score": {
-            0:s2h,
-            1:s2h,
+            0: s2e,
+            1: s2n,
+            2: s2h,
+            3: s2ex,
         },
         "name": "エリーゼのために",
         "font": "Rampart One",
@@ -90,8 +95,10 @@ let tunesInfo = [
     {
         "data": "hal",
         "score":{
-            0:s3h,
-            1:s3h,
+            0: s3e,
+            1: s3n,
+            2: s3h,
+            3: s3ex,
         },
         "name": "ハルジオン",
         "font": "Shippori Antique",//仮
@@ -106,8 +113,10 @@ let tunesInfo = [
     {
         "data": "kimigayo",
         "score":{
-            0:s4h,
-            1:s4h,
+            0: s4e,
+            1: s4n,
+            2: s4h,
+            3: s4ex,
         },
         "name": "君が代",
         "font": "Yuji Mai",
@@ -123,8 +132,10 @@ let tunesInfo = [
     {
         "data": "alps1",
         "score":{
-            0:s5h,
-            1:s5h,
+            0: s5e,
+            1: s5n,
+            2: s5h,
+            3: s5ex,
         },
         "name": "アルプス一万尺",
         "font": "Yuji Boku",
@@ -137,9 +148,6 @@ let tunesInfo = [
         ],
         "volume":0.6,
     },
-    /*
-    
-    */
 
     /*
     
