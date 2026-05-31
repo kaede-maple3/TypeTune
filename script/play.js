@@ -312,14 +312,14 @@ function finish() {
 function notesJudge(delta, tuneConvTime, nowBeat) {
     for (let i = 0; i < keys.length; i++) {
         if (Fortis.InputKey["Key" + keys[i]]) {
-            if (keysIsPushed[i] <= 3) {
+            if (keysIsPushed[i] <= 5) {
                 if (beatsStd) {//拍の基準が古い
                     //前後0.5拍分ずつを判定対象とする(0.42/0.32/0.2/0.07/0でmiss/bad/good/great/perfect)
                     for (let j = 0; j < notesObjs[i].length; j++) {
                         let time = notesObjs[i][j].beat * oneBeatTime * 2;
                         //console.log(tuneConvTime - time)
                         if (Math.abs(tuneConvTime - time) <= oneBeatTime * 2 * 0.5) {//１拍の半分
-                            keysIsPushed[i] = 4;
+                            keysIsPushed[i] = 6;
 
                             let diff = Math.abs(tuneConvTime - time);
 
@@ -374,7 +374,7 @@ function notesJudge(delta, tuneConvTime, nowBeat) {
                         let time = notesObjs[i][j].beat * oneBeatTime;
                         //console.log(tuneConvTime - time)
                         if (Math.abs(tuneConvTime - time) <= oneBeatTime * 0.5) {//１拍の半分
-                            keysIsPushed[i] = 4;
+                            keysIsPushed[i] = 6;
 
                             let diff = Math.abs(tuneConvTime - time);
 
