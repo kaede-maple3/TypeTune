@@ -17,6 +17,9 @@ let beatsStdOaN = [//old=true/new=false
     [//アルプス一万尺
         false,true,true,false
     ],
+    [//カノン
+        false,false,false,false
+    ],
 ]
 
 let tunesInfo = [
@@ -148,7 +151,25 @@ let tunesInfo = [
         ],
         "volume":0.6,
     },
-
+    {
+        "data": "cannon",
+        "score": {
+            0: s6e,
+            1: s6n,
+            2: s6h,
+            3: s6ex,
+        },
+        "name": "カノン",
+        "font": "Reggae One",
+        "time": 9600,
+        "BPM": 84,
+        "credit": "作曲：パッヘルベル",
+        "scoreRate": [
+            0, 60000, 130000, 210000, 320000, 450000
+        
+        ],
+        "volume":0.6,
+    },
     /*
     
     {
