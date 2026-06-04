@@ -44,6 +44,7 @@ function Init() {
         "hal": "./tune/hal.wav",
         "kimigayo": "./tune/kimigayo.wav",
         "alps1": "./tune/alps1.wav",
+        "cannon": "./tune/canon.wav",
     });
 
     Fortis.SoundLoader.addNormalSounds({
@@ -53,7 +54,7 @@ function Init() {
 let nowScene;
 let localStorage;
 let highScoreData;
-const gasURL = "https://script.google.com/macros/s/AKfycbyqWkwOrSC6mahRHKENYFjL7RLzCZG9HtGJ1kbUHJxrr5CouaVHn2FrZcsqDK0y2X2DUg/exec";
+const gasURL = "https://script.google.com/macros/s/AKfycbw5QwdSMo2uunZSWTtfwcZ_EaFH2A6vknWVINz4V2yDqIwTyX1WeEE9M_7_xFjWZoPt5Q/exec";
 
 function Ready() {
     /*
