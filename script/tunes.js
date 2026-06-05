@@ -12,7 +12,7 @@ let beatsStdOaN = [//old=true/new=false
         false,true,true,false
     ],
     [//君が代
-        false,true,true,false
+        false,false,false,false
     ],
     [//アルプス一万尺
         false,true,true,false
