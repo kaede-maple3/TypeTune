@@ -161,7 +161,7 @@ let tunesInfo = [
         },
         "name": "カノン",
         "font": "Reggae One",
-        "time": 9600,
+        "time": 96000,
         "BPM": 84,
         "credit": "作曲：パッヘルベル",
         "scoreRate": [
